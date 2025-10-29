@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{bets.title}">Mis Apuestas - Casa de Apuestas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #ff3559;
+            --primary-green: #00ff88;
+            --primary-blue: #2d7ff9;
+            --dark-bg: #0a0f1c;
+            --card-bg: #1a243a;
+            --card-hover: #212c45;
+            --border-color: #2d3748;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --font-main: 'Inter', sans-serif;
+            --font-numbers: 'Oxanium', cursive;
+            --font-accent: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+        }
+
+        /* Navbar Mejorada */
+        .navbar-brand {
+            font-family: var(--font-accent);
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--text-light) !important;
+        }
+
+        .navbar-dark.bg-dark {
+            background: linear-gradient(135deg, #131a2d 0%, #1a243a 100%) !important;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .saldo {
+            font-family: var(--font-numbers);
+            font-weight: 600;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+        }
+
+        /* Dropdown de Usuario Mejorado */
+        .user-dropdown .dropdown-toggle {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-light);
+            font-family: var(--font-main);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown .dropdown-toggle:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .user-dropdown .dropdown-menu {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .user-dropdown .dropdown-item {
+            color: var(--text-light);
+            font-family: var(--font-main);
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown .dropdown-item:hover {
+            background: rgba(45, 127, 249, 0.1);
+            color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        .user-dropdown .dropdown-divider {
+            border-color: var(--border-color);
+        }
+
+        /* Contenedor Principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Cards Modernizadas */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+            box-shadow: 0 8px 25px rgba(45, 127, 249, 0.15);
+        }
+
+        .card-header {
+            background: rgba(255,255,255,0.05) !important;
+            border-bottom: 1px solid var(--border-color);
+            font-family: var(--font-accent);
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        /* Botones Mejorados */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #1a67d6 100%);
+            border: none;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(45, 127, 249, 0.3);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            font-family: var(--font-accent);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-outline-secondary {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            font-family: var(--font-accent);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--text-muted);
+            color: var(--dark-bg);
+        }
+
+        .btn-outline-danger {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+            font-family: var(--font-accent);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-danger:hover {
+            background: var(--primary-red);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Formularios Mejorados */
+        .form-label {
+            font-family: var(--font-accent);
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .form-select, .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            border-radius: 8px;
+        }
+
+        .form-select:focus, .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--primary-blue);
+            color: var(--text-light);
+            box-shadow: 0 0 0 0.2rem rgba(45, 127, 249, 0.25);
+        }
+
+        /* TABLAS MEJORADAS */
+        .table {
+            color: var(--text-white);
+            font-family: var(--font-main);
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: rgba(45, 127, 249, 0.2);
+            border-color: var(--border-color);
+            font-family: var(--font-accent);
+            font-weight: 600;
+            color: var(--text-white);
+            padding: 15px 12px;
+        }
+
+        .table td {
+            border-color: var(--border-color);
+            padding: 15px 12px;
+            color: var(--text-light);
+            background: var(--card-bg);
+            vertical-align: middle;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255,255,255,0.03);
+        }
+
+        .table-striped tbody tr:nth-of-type(even) {
+            background-color: rgba(255,255,255,0.01);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(45, 127, 249, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .table strong {
+            color: var(--text-white);
+            font-weight: 600;
+        }
+
+        .table .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Badges Mejorados */
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #ffaa00 0%, #cc8800 100%) !important;
+            color: #0a0f1c;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #00cc77 100%) !important;
+            color: #0a0f1c;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .badge.bg-danger {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #cc2b47 100%) !important;
+            color: white;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+            color: white;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .badge.bg-info {
+            background: linear-gradient(135deg, #00ddff 0%, #00a3cc 100%) !important;
+            color: #0a0f1c;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        /* Cards de Resumen */
+        .summary-card {
+            text-align: center;
+            padding: 1.5rem;
+            border: none !important;
+        }
+
+        .summary-card h5 {
+            font-family: var(--font-numbers);
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .text-muted {
+            color: var(--text-muted) !important;
+            font-family: var(--font-accent);
+            font-weight: 500;
+        }
+
+        .summary-card.bg-light {
+            background: rgba(255,255,255,0.05) !important;
+            color: var(--text-light) !important;
+        }
+
+        .summary-card.bg-success {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #00cc77 100%) !important;
+            color: #0a0f1c !important;
+        }
+
+        .summary-card.bg-danger {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #cc2b47 100%) !important;
+            color: white !important;
+        }
+
+        .summary-card.bg-warning {
+            background: linear-gradient(135deg, #ffaa00 0%, #cc8800 100%) !important;
+            color: #0a0f1c !important;
+        }
+
+        /* Estados Vacíos */
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+
+        .empty-state .fas {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer Mejorado */
+        footer.bg-dark {
+            background: linear-gradient(135deg, #131a2d 0%, #1a243a 100%) !important;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        /* Iconos con Efecto */
+        .fas {
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .fas,
+        .btn:hover .fas {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0 10px;
+            }
+
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 10px 8px;
+            }
+
+            .summary-card h5 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar Mejorada con Menú Desplegable -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/dashboard}">
+            <i class="fas fa-dice me-2"></i><span th:text="#{brand.name}">Casa de Apuestas</span>
+        </a>
+
+        <div class="navbar-nav ms-auto">
+            <span class="navbar-text saldo me-3" th:if="${usuario}">
+                <i class="fas fa-wallet me-1"></i>
+                $<span th:text="${#numbers.formatDecimal(usuario.saldo, 1, 2)}">0.00</span>
+            </span>
+
+            <!-- Menú Desplegable del Usuario -->
+            <div class="nav-item dropdown user-dropdown" th:if="${usuario}">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle me-2 fs-5"></i>
+                    <span th:text="${usuario.nombreUsuario}">Usuario</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" th:href="@{/perfil}">
+                            <i class="fas fa-user me-2"></i><span th:text="#{menu.profile}">Mi Perfil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" th:href="@{/apuestas}">
+                            <i class="fas fa-clipboard-list me-2"></i><span th:text="#{menu.bets}">Mis Apuestas</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" th:href="@{/transacciones}">
+                            <i class="fas fa-exchange-alt me-2"></i><span th:text="#{menu.transactions}">Transacciones</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt me-2"></i><span th:text="#{menu.logout}">Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido Principal -->
+<main class="main-container mt-4">
+    <!-- Header de la Página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-clipboard-list me-2"></i><span th:text="#{bets.history}">Historial de Apuestas</span>
+        </h2>
+    </div>
+
+    <!-- Filtros Mejorados -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="fas fa-filter me-2"></i><span th:text="#{bets.filter}">Filtrar Apuestas</span>
+            </h5>
+            <form th:action="@{/apuestas}" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="estado" class="form-label" th:text="#{filter.status}">Estado</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value=""><span th:text="#{filter.all.status}">Todos los estados</span></option>
+                        <option value="PENDIENTE" th:selected="${param.estado == 'PENDIENTE'}"><span th:text="#{filter.pending}">Pendientes</span></option>
+                        <option value="GANADA" th:selected="${param.estado == 'GANADA'}"><span th:text="#{filter.won}">Ganadas</span></option>
+                        <option value="PERDIDA" th:selected="${param.estado == 'PERDIDA'}"><span th:text="#{filter.lost}">Perdidas</span></option>
+                        <option value="CANCELADA" th:selected="${param.estado == 'CANCELADA'}"><span th:text="#{filter.cancelled}">Canceladas</span></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="deporte" class="form-label" th:text="#{filter.sport}">Deporte</label>
+                    <select name="deporte" id="deporte" class="form-select">
+                        <option value=""><span th:text="#{filter.all.sports}">Todos los deportes</span></option>
+                        <option th:each="deporte : ${deportes}"
+                                th:value="${deporte}"
+                                th:text="${deporte}"
+                                th:selected="${param.deporte == deporte}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-filter me-1"></i><span th:text="#{filter.apply}">Filtrar</span>
+                        </button>
+                        <a th:href="@{/apuestas}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i><span th:text="#{filter.clear}">Limpiar</span>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Apuestas -->
+    <div class="card">
+        <div class="card-body">
+            <div th:if="${apuestas == null or apuestas.empty}" class="text-center empty-state">
+                <i class="fas fa-clipboard-list fa-4x mb-3"></i>
+                <h4 class="text-muted" th:text="#{bets.no.bets}">No hay apuestas registradas</h4>
+                <p class="text-muted mb-4" th:text="#{bets.first.bet}">Realiza tu primera apuesta desde el dashboard</p>
+                <a th:href="@{/dashboard}" class="btn btn-primary">
+                    <i class="fas fa-dice me-1"></i><span th:text="#{bets.go.dashboard}">Ir al Dashboard</span>
+                </a>
+            </div>
+
+            <div th:if="${not (apuestas == null or apuestas.empty)}" class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th th:text="#{table.event}">Evento</th>
+                        <th th:text="#{table.sport}">Deporte</th>
+                        <th th:text="#{table.bet}">Apuesta</th>
+                        <th th:text="#{table.odds}">Cuota</th>
+                        <th th:text="#{table.amount}">Monto</th>
+                        <th th:text="#{table.potential.win}">Ganancia Potencial</th>
+                        <th th:text="#{table.status}">Estado</th>
+                        <th th:text="#{table.date}">Fecha</th>
+                        <th th:text="#{table.actions}">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="apuesta : ${apuestas}">
+                        <td>
+                            <strong th:text="${apuesta.evento.nombreEvento}"></strong>
+                            <br>
+                            <small class="text-muted" th:text="${#temporals.format(apuesta.evento.fechaEvento, 'dd/MM/yyyy HH:mm')}"></small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info" th:text="${apuesta.evento.deporte}"></span>
+                        </td>
+                        <td th:text="${apuesta.cuota.descripcion}"></td>
+                        <td>
+                            <span class="badge bg-secondary" th:text="${#numbers.formatDecimal(apuesta.cuota.valor, 1, 2)}"></span>
+                        </td>
+                        <td>
+                            <strong th:text="'$' + ${#numbers.formatDecimal(apuesta.monto, 1, 2)}"></strong>
+                        </td>
+                        <td>
+                            <strong class="text-success" th:text="'$' + ${#numbers.formatDecimal(apuesta.gananciaPotencial, 1, 2)}"></strong>
+                        </td>
+                        <td>
+                            <span th:switch="${apuesta.estado}">
+                                <span th:case="'PENDIENTE'" class="badge bg-warning">
+                                    <i class="fas fa-clock me-1"></i><span th:text="#{bet.status.pending}">PENDIENTE</span>
+                                </span>
+                                <span th:case="'GANADA'" class="badge bg-success">
+                                    <i class="fas fa-trophy me-1"></i><span th:text="#{bet.status.won}">GANADA</span>
+                                </span>
+                                <span th:case="'PERDIDA'" class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i><span th:text="#{bet.status.lost}">PERDIDA</span>
+                                </span>
+                                <span th:case="'CANCELADA'" class="badge bg-secondary">
+                                    <i class="fas fa-ban me-1"></i><span th:text="#{bet.status.cancelled}">CANCELADA</span>
+                                </span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:text="${#temporals.format(apuesta.fechaApuesta, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <small class="text-muted" th:text="${#temporals.format(apuesta.fechaApuesta, 'HH:mm')}"></small>
+                        </td>
+                        <td>
+                            <div th:if="${apuesta.estado == 'PENDIENTE'}">
+                                <form th:action="@{'/apuestas/' + ${apuesta.id} + '/cancelar'}" method="post"
+                                      style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            th:attr="onclick='return confirm(\'' + #{table.cancel.confirm} + '\')',title=#{table.cancel.bet}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:if="${apuesta.estado != 'PENDIENTE'}" class="text-muted">-</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resumen Mejorado -->
+            <div th:if="${not (apuestas == null or apuestas.empty)}" class="mt-4">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-bar me-2"></i><span th:text="#{bets.summary}">Resumen de Apuestas</span>
+                </h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="card summary-card bg-light">
+                            <div class="card-body">
+                                <h5 th:text="${totalApuestas}">0</h5>
+                                <p class="text-muted mb-0" th:text="#{bets.total.bets}">Total Apuestas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card summary-card bg-success">
+                            <div class="card-body">
+                                <h5 th:text="${apuestasGanadas}">0</h5>
+                                <p class="mb-0" th:text="#{bets.won.bets}">Ganadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card summary-card bg-danger">
+                            <div class="card-body">
+                                <h5 th:text="${apuestasPerdidas}">0</h5>
+                                <p class="mb-0" th:text="#{bets.lost.bets}">Perdidas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card summary-card bg-warning">
+                            <div class="card-body">
+                                <h5 th:text="${apuestasPendientes}">0</h5>
+                                <p class="mb-0" th:text="#{bets.pending.bets}">Pendientes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer Mejorado con Solo Soporte -->
+<footer class="bg-dark text-light mt-5 py-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-2"><i class="fas fa-dice me-2"></i><span th:text="#{brand.name}">Casa de Apuestas</span></h5>
+                <p class="text-muted mb-0" th:text="#{brand.subtitle}">Tu plataforma de apuestas confiable y segura</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a th:href="@{/reclamos}" class="btn btn-outline-warning">
+                    <i class="fas fa-headset me-2"></i><span th:text="#{footer.support.claims}">Soporte y Reclamos</span>
+                </a>
+            </div>
+        </div>
+        <hr class="my-3 border-secondary">
+        <div class="text-center">
+            <p class="mb-0 text-muted" th:text="#{footer.copyright}">&copy; 2025 Casa de Apuestas - Proyecto Académico</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
