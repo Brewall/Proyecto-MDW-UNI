@@ -4,6 +4,8 @@ import com.example.app.model.Usuario;
 import com.example.app.repository.UsuarioRepository;
 import com.example.app.service.interfaces.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;  // BCrypt inyectado automáticamente
 
     @Override
     public List<Usuario> findAll() {
@@ -41,6 +46,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new IllegalArgumentException("Ya existe un usuario con ese correo");
         }
+
+        // ENCRIPTAR contraseña con BCrypt antes de guardar
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
         return usuarioRepository.save(usuario);
     }
@@ -126,5 +134,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public boolean existeNombreUsuario(String nombreUsuario) {
         return usuarioRepository.findByNombreUsuario(nombreUsuario).isPresent();
+    }
+
+    @Override
+    public Usuario getUsuarioAutenticado(Authentication authentication) {
+        String correo = authentication.getName();
+        return usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }

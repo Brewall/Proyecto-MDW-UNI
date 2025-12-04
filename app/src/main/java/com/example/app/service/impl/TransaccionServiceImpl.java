@@ -48,11 +48,6 @@ public class TransaccionServiceImpl implements TransaccionService {
     }
 
     @Override
-    public List<Transaccion> findHistorialUsuario(Integer usuarioId) {
-        return transaccionRepository.findByUsuarioIdOrderByFechaTransaccionDesc(usuarioId);
-    }
-
-    @Override
     public Transaccion registrarDeposito(Integer usuarioId, Double monto, String descripcion) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -91,11 +86,6 @@ public class TransaccionServiceImpl implements TransaccionService {
 
         Transaccion transaccion = Transaccion.crearRetiro(usuario, monto, descripcion);
         return transaccionRepository.save(transaccion);
-    }
-
-    @Override
-    public Double calcularBalanceUsuario(Integer usuarioId) {
-        return transaccionRepository.calcularBalanceUsuario(usuarioId);
     }
 
     @Override

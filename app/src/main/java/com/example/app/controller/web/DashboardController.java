@@ -5,12 +5,13 @@ import com.example.app.service.interfaces.ApuestaService;
 import com.example.app.service.interfaces.EventoService;
 import com.example.app.service.interfaces.CuotaService;
 import com.example.app.service.interfaces.TransaccionService;
+import com.example.app.service.interfaces.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,32 +31,18 @@ public class DashboardController {
     @Autowired
     private CuotaService cuotaService;
 
-    @GetMapping({"/", "/dashboard"})
-    public String dashboard(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+    @Autowired
+    private UsuarioService usuarioService;
 
-        if (usuario == null) {
-            return "redirect:/login";
-        }
+    @GetMapping({"/", "/dashboard"})
+    public String dashboard(Authentication authentication, Model model) {
+        // Obtener usuario desde Spring Security
+        String correo = authentication.getName();
+        Usuario usuario = usuarioService.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Cargar datos para el dashboard
         List<com.example.app.model.Evento> eventos = eventoService.findEventosDisponiblesParaApuestas();
-
-        // DEBUG: Verificar qué eventos se están cargando
-        System.out.println("=== DEBUG DASHBOARD ===");
-        System.out.println("Eventos encontrados: " + (eventos != null ? eventos.size() : 0));
-        if (eventos != null) {
-            for (com.example.app.model.Evento evento : eventos) {
-                System.out.println("Evento: " + evento.getNombreEvento() + " (ID: " + evento.getId() + ")");
-                // Cargar cuotas para cada evento
-                List<com.example.app.model.Cuota> cuotas = cuotaService.findCuotasDisponiblesByEvento(evento.getId());
-                System.out.println("Cuotas para " + evento.getNombreEvento() + ": " + cuotas.size());
-                for (com.example.app.model.Cuota cuota : cuotas) {
-                    System.out.println("  - " + cuota.getDescripcion() + " (" + cuota.getValor() + ")");
-                }
-            }
-        }
-        System.out.println("======================");
 
         // Preparar datos para la vista
         Map<Integer, List<com.example.app.model.Cuota>> cuotasPorEvento = new HashMap<>();
@@ -69,7 +56,7 @@ public class DashboardController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("eventos", eventos);
         model.addAttribute("cuotasPorEvento", cuotasPorEvento);
-        model.addAttribute("apuestasRecientes", apuestaService.findByUsuarioId(usuario.getId()).stream().limit(5).toList());
+        model.addAttribute("apuestasRecientes", apuestaService.findByUsuarioIdWithEventoAndCuota(usuario.getId()).stream().limit(5).toList());
         model.addAttribute("apuestasPendientes", apuestaService.findApuestasPendientesByUsuario(usuario.getId()));
 
         try {

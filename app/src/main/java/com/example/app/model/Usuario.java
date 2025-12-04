@@ -27,7 +27,10 @@ public class Usuario {
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     @Column(length = 15)
-    private String estado = "ACTIVO";
+    private String estado = "ACTIVO";  // ACTIVO or INHABILITADO
+
+    @Column(length = 20)
+    private String rol = "USER";  // USER or SUPPORT
 
     // --- CONSTRUCTORES ---
     public Usuario() {}
@@ -60,8 +63,20 @@ public class Usuario {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
+
+    // --- UTILITY METHODS ---
+    public boolean isSupport() {
+        return "SUPPORT".equals(rol);
+    }
+
+    public boolean isUser() {
+        return "USER".equals(rol);
+    }
+
     @Override
     public String toString() {
-        return "Usuario{id=" + id + ", nombreUsuario='" + nombreUsuario + "', correo='" + correo + "', saldo=" + saldo + "}";
+        return "Usuario{id=" + id + ", nombreUsuario='" + nombreUsuario + "', correo='" + correo + "', saldo=" + saldo + ", rol='" + rol + "'}";
     }
 }

@@ -1,6 +1,7 @@
 package com.example.app.service.interfaces;
 
 import com.example.app.model.Usuario;
+import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,9 @@ public interface UsuarioService {
     Optional<Usuario> findByCorreo(String correo);
     Optional<Usuario> findByNombreUsuario(String nombreUsuario);
     List<Usuario> findByEstado(String estado);
+
+    // Autenticación
+    Usuario getUsuarioAutenticado(Authentication authentication);
 
     // Gestión de saldos
     Usuario depositarSaldo(Integer usuarioId, Double monto);

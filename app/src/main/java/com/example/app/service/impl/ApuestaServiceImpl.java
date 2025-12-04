@@ -58,13 +58,13 @@ public class ApuestaServiceImpl implements ApuestaService {
     }
 
     @Override
-    public List<Apuesta> findByEventoId(Integer eventoId) {
-        return apuestaRepository.findByEventoId(eventoId);
+    public List<Apuesta> findByUsuarioIdWithEventoAndCuota(Integer usuarioId) {
+        return apuestaRepository.findByUsuarioIdWithEventoAndCuota(usuarioId);
     }
 
     @Override
-    public List<Apuesta> findByEstado(String estado) {
-        return apuestaRepository.findByEstado(estado);
+    public List<Apuesta> findByEventoId(Integer eventoId) {
+        return apuestaRepository.findByEventoId(eventoId);
     }
 
     @Override
@@ -74,17 +74,45 @@ public class ApuestaServiceImpl implements ApuestaService {
 
     @Override
     public Apuesta realizarApuesta(Integer usuarioId, Integer cuotaId, Double monto) {
-        // Validaciones
-        if (!puedeRealizarApuesta(usuarioId, cuotaId, monto)) {
-            throw new IllegalArgumentException("No se puede realizar la apuesta");
+        // Validar monto mínimo
+        if (monto < 1.00) {
+            throw new IllegalArgumentException("El monto mínimo de apuesta es $1.00");
         }
 
-        // Obtener entidades
+        // Validar usuario
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        
+        if ("INHABILITADO".equals(usuario.getEstado())) {
+            throw new IllegalArgumentException("Tu cuenta está inhabilitada. No puedes realizar apuestas.");
+        }
+        
+        if (!"ACTIVO".equals(usuario.getEstado())) {
+            throw new IllegalArgumentException("Tu cuenta no está activa. No puedes realizar apuestas.");
+        }
 
+        // Validar saldo
+        if (usuario.getSaldo() < monto) {
+            throw new IllegalArgumentException("Saldo insuficiente. Tu saldo es $" + String.format("%.2f", usuario.getSaldo()));
+        }
+
+        // Validar cuota
         Cuota cuota = cuotaRepository.findById(cuotaId)
                 .orElseThrow(() -> new IllegalArgumentException("Cuota no encontrada"));
+        
+        if (!"DISPONIBLE".equals(cuota.getEstado())) {
+            throw new IllegalArgumentException("Esta cuota ya no está disponible para apostar");
+        }
+
+        // Validar evento
+        Evento evento = cuota.getEvento();
+        if (!"PROGRAMADO".equals(evento.getEstado())) {
+            throw new IllegalArgumentException("Este evento ya no acepta apuestas");
+        }
+        
+        if (evento.getFechaEvento().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Este evento ya ha comenzado o finalizado");
+        }
 
         // Descontar saldo
         usuario.setSaldo(usuario.getSaldo() - monto);
@@ -94,9 +122,9 @@ public class ApuestaServiceImpl implements ApuestaService {
         Apuesta apuesta = new Apuesta(usuario, cuota.getEvento(), cuota, monto);
         Apuesta apuestaGuardada = apuestaRepository.save(apuesta);
 
-        // Registrar transacción
+        // Registrar transacción (incluir ID de apuesta para poder correlacionar con cancelaciones)
         transaccionService.registrarApuesta(usuarioId, monto,
-                "Apuesta en " + cuota.getEvento().getNombreEvento());
+                "Apuesta en " + cuota.getEvento().getNombreEvento() + " #" + apuestaGuardada.getId());
 
         return apuestaGuardada;
     }
@@ -150,68 +178,6 @@ public class ApuestaServiceImpl implements ApuestaService {
         // Registrar transacción de devolución
         transaccionService.registrarDeposito(usuario.getId(), apuesta.getMonto(),
                 "Devolución apuesta cancelada #" + apuestaId);
-    }
-
-    @Override
-    public void procesarResultadosEvento(Integer eventoId, Integer cuotaGanadoraId) {
-        // Marcar cuota ganadora
-        Cuota cuotaGanadora = cuotaRepository.findById(cuotaGanadoraId)
-                .orElseThrow(() -> new IllegalArgumentException("Cuota ganadora no encontrada"));
-        cuotaGanadora.setEstado("GANADORA");
-        cuotaRepository.save(cuotaGanadora);
-
-        // Marcar otras cuotas como perdedoras
-        List<Cuota> cuotasDelEvento = cuotaRepository.findByEventoId(eventoId);
-        for (Cuota cuota : cuotasDelEvento) {
-            if (!cuota.getId().equals(cuotaGanadoraId)) {
-                cuota.setEstado("PERDEDORA");
-                cuotaRepository.save(cuota);
-            }
-        }
-
-        // Procesar apuestas
-        List<Apuesta> apuestasDelEvento = apuestaRepository.findByEventoId(eventoId);
-        for (Apuesta apuesta : apuestasDelEvento) {
-            if (apuesta.getCuota().getId().equals(cuotaGanadoraId)) {
-                procesarApuestaGanada(apuesta.getId());
-            } else {
-                procesarApuestaPerdida(apuesta.getId());
-            }
-        }
-    }
-
-    @Override
-    public boolean puedeRealizarApuesta(Integer usuarioId, Integer cuotaId, Double monto) {
-        // Validar monto mínimo
-        if (monto < 1.00) {
-            return false;
-        }
-
-        // Validar usuario
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
-        if (usuarioOpt.isEmpty() || !"ACTIVO".equals(usuarioOpt.get().getEstado())) {
-            return false;
-        }
-
-        // Validar saldo
-        if (usuarioOpt.get().getSaldo() < monto) {
-            return false;
-        }
-
-        // Validar cuota
-        Optional<Cuota> cuotaOpt = cuotaRepository.findById(cuotaId);
-        if (cuotaOpt.isEmpty() || !"DISPONIBLE".equals(cuotaOpt.get().getEstado())) {
-            return false;
-        }
-
-        // Validar evento
-        Evento evento = cuotaOpt.get().getEvento();
-        if (!"PROGRAMADO".equals(evento.getEstado()) ||
-                evento.getFechaEvento().isBefore(java.time.LocalDateTime.now())) {
-            return false;
-        }
-
-        return true;
     }
 
     @Override

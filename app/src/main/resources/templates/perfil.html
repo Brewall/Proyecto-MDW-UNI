@@ -73,23 +73,33 @@
         }
 
         .user-dropdown .dropdown-menu {
-            background: var(--card-bg);
+            background: #1e293b;
             border: 1px solid var(--border-color);
             border-radius: 10px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            padding: 0.5rem;
         }
 
         .user-dropdown .dropdown-item {
             color: var(--text-light);
             font-family: var(--font-main);
             padding: 10px 15px;
+            border-radius: 6px;
             transition: all 0.3s ease;
         }
 
         .user-dropdown .dropdown-item:hover {
-            background: rgba(45, 127, 249, 0.1);
+            background: rgba(45, 127, 249, 0.15);
             color: var(--primary-blue);
             transform: translateX(5px);
+        }
+
+        .user-dropdown .dropdown-item.text-danger {
+            color: #ff3559 !important;
+        }
+
+        .user-dropdown .dropdown-item.text-danger:hover {
+            background: rgba(255, 53, 89, 0.15);
         }
 
         .user-dropdown .dropdown-divider {
@@ -172,15 +182,19 @@
         }
 
         .form-control {
-            background: rgba(255,255,255,0.05);
+            background: #1e293b;
             border: 1px solid var(--border-color);
             color: var(--text-light);
             font-family: var(--font-main);
             border-radius: 8px;
         }
 
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
         .form-control:focus {
-            background: rgba(255,255,255,0.08);
+            background: #253349;
             border-color: var(--primary-blue);
             color: var(--text-light);
             box-shadow: 0 0 0 0.2rem rgba(45, 127, 249, 0.25);
@@ -271,6 +285,15 @@
             border-radius: 6px;
         }
 
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+            color: #0a0f1c !important;
+            font-family: var(--font-accent);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
         /* Iconos con Efecto */
         .fas {
             transition: transform 0.3s ease;
@@ -345,9 +368,11 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item text-danger" th:href="@{/logout}">
-                            <i class="fas fa-sign-out-alt me-2"></i><span th:text="#{menu.logout}">Cerrar Sesión</span>
-                        </a>
+                        <form th:action="@{/logout}" method="post" class="m-0 p-0">
+                            <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                                <i class="fas fa-sign-out-alt me-2"></i><span th:text="#{menu.logout}">Cerrar Sesión</span>
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -388,8 +413,8 @@
                             <span th:if="${usuario.estado == 'ACTIVO'}" class="badge bg-success">
                                 <i class="fas fa-check-circle me-1"></i><span th:text="#{profile.status.active}">ACTIVO</span>
                             </span>
-                            <span th:if="${usuario.estado == 'SUSPENDIDO'}" class="badge bg-danger">
-                                <i class="fas fa-ban me-1"></i><span th:text="#{profile.status.suspended}">SUSPENDIDO</span>
+                            <span th:if="${usuario.estado == 'INHABILITADO'}" class="badge bg-warning text-dark">
+                                <i class="fas fa-exclamation-triangle me-1"></i>INHABILITADO
                             </span>
                         </div>
                     </div>

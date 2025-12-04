@@ -72,43 +72,4 @@ public class CuotaServiceImpl implements CuotaService {
     public List<Cuota> findCuotasDisponiblesByEvento(Integer eventoId) {
         return cuotaRepository.findCuotasDisponiblesByEvento(eventoId);
     }
-
-    @Override
-    public boolean existeCuotaParaEvento(Integer eventoId, String descripcion) {
-        return cuotaRepository.existsByEventoIdAndDescripcion(eventoId, descripcion);
-    }
-
-    @Override
-    public Cuota cerrarCuota(Integer cuotaId) {
-        Cuota cuota = cuotaRepository.findById(cuotaId)
-                .orElseThrow(() -> new IllegalArgumentException("Cuota no encontrada"));
-
-        cuota.setEstado("CERRADA");
-        return cuotaRepository.save(cuota);
-    }
-
-    @Override
-    public Cuota marcarComoGanadora(Integer cuotaId) {
-        Cuota cuota = cuotaRepository.findById(cuotaId)
-                .orElseThrow(() -> new IllegalArgumentException("Cuota no encontrada"));
-
-        cuota.setEstado("GANADORA");
-        return cuotaRepository.save(cuota);
-    }
-
-    @Override
-    public Cuota marcarComoPerdedora(Integer cuotaId) {
-        Cuota cuota = cuotaRepository.findById(cuotaId)
-                .orElseThrow(() -> new IllegalArgumentException("Cuota no encontrada"));
-
-        cuota.setEstado("PERDEDORA");
-        return cuotaRepository.save(cuota);
-    }
-
-    @Override
-    public boolean cuotaEstaDisponible(Integer cuotaId) {
-        return cuotaRepository.findById(cuotaId)
-                .map(cuota -> "DISPONIBLE".equals(cuota.getEstado()))
-                .orElse(false);
-    }
 }

@@ -75,23 +75,33 @@
         }
 
         .user-dropdown .dropdown-menu {
-            background: var(--card-bg);
+            background: #1e293b;
             border: 1px solid var(--border-color);
             border-radius: 10px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            padding: 0.5rem;
         }
 
         .user-dropdown .dropdown-item {
             color: var(--text-light);
             font-family: var(--font-main);
             padding: 10px 15px;
+            border-radius: 6px;
             transition: all 0.3s ease;
         }
 
         .user-dropdown .dropdown-item:hover {
-            background: rgba(45, 127, 249, 0.1);
+            background: rgba(45, 127, 249, 0.15);
             color: var(--primary-blue);
             transform: translateX(5px);
+        }
+
+        .user-dropdown .dropdown-item.text-danger {
+            color: var(--primary-red) !important;
+        }
+
+        .user-dropdown .dropdown-item.text-danger:hover {
+            background: rgba(255, 53, 89, 0.15);
         }
 
         .user-dropdown .dropdown-divider {
@@ -241,46 +251,53 @@
 
         /* TABLAS MEJORADAS - CORREGIDAS PARA MEJOR LEGIBILIDAD */
         .table {
-            color: var(--text-white);
+            color: var(--text-white) !important;
             font-family: var(--font-main);
-            background: var(--card-bg);
+            background: var(--card-bg) !important;
             border-radius: 8px;
             overflow: hidden;
+            --bs-table-bg: var(--card-bg) !important;
+            --bs-table-color: var(--text-light) !important;
+            --bs-table-striped-bg: rgba(255,255,255,0.03) !important;
+            --bs-table-striped-color: var(--text-light) !important;
+            --bs-table-hover-bg: rgba(45, 127, 249, 0.1) !important;
+            --bs-table-hover-color: var(--text-light) !important;
         }
 
         .table th {
-            background: rgba(45, 127, 249, 0.2);
-            border-color: var(--border-color);
+            background: rgba(45, 127, 249, 0.2) !important;
+            border-color: var(--border-color) !important;
             font-family: var(--font-accent);
             font-weight: 600;
-            color: var(--text-white);
+            color: var(--text-white) !important;
             padding: 12px 15px;
         }
 
         .table td {
-            border-color: var(--border-color);
+            border-color: var(--border-color) !important;
             padding: 12px 15px;
-            color: var(--text-light);
-            background: var(--card-bg);
+            color: var(--text-light) !important;
+            background: transparent !important;
         }
 
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(255,255,255,0.03);
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: rgba(255,255,255,0.03) !important;
+            color: var(--text-light) !important;
         }
 
-        .table-striped tbody tr:nth-of-type(even) {
-            background-color: rgba(255,255,255,0.01);
+        .table-striped > tbody > tr:nth-of-type(even) > * {
+            background-color: rgba(255,255,255,0.01) !important;
+            color: var(--text-light) !important;
         }
 
-        .table-hover tbody tr:hover {
-            background-color: rgba(45, 127, 249, 0.1);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
+        .table-hover > tbody > tr:hover > * {
+            background-color: rgba(45, 127, 249, 0.1) !important;
+            color: var(--text-light) !important;
         }
 
         /* Textos específicos de la tabla para mejor contraste */
         .table strong {
-            color: var(--text-white);
+            color: var(--text-white) !important;
             font-weight: 600;
         }
 
@@ -353,22 +370,26 @@
 
         /* Inputs Mejorados */
         .form-control {
-            background: rgba(255,255,255,0.05);
+            background: #1e293b;
             border: 1px solid var(--border-color);
             color: var(--text-light);
             font-family: var(--font-main);
             border-radius: 8px;
         }
 
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
         .form-control:focus {
-            background: rgba(255,255,255,0.08);
+            background: #253349;
             border-color: var(--primary-blue);
             color: var(--text-light);
             box-shadow: 0 0 0 0.2rem rgba(45, 127, 249, 0.25);
         }
 
         .input-group-text {
-            background: var(--border-color);
+            background: #2d3748;
             border: 1px solid var(--border-color);
             color: var(--text-light);
         }
@@ -430,9 +451,11 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item text-danger" th:href="@{/logout}">
-                            <i class="fas fa-sign-out-alt me-2"></i><span th:text="#{menu.logout}">Cerrar Sesión</span>
-                        </a>
+                        <form th:action="@{/logout}" method="post" class="m-0 p-0">
+                            <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                                <i class="fas fa-sign-out-alt me-2"></i><span th:text="#{menu.logout}">Cerrar Sesión</span>
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
