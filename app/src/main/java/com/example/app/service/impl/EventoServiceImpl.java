@@ -77,39 +77,4 @@ public class EventoServiceImpl implements EventoService {
     public List<Evento> findEventosDisponiblesParaApuestas() {
         return eventoRepository.findByEstado("PROGRAMADO");
     }
-
-    @Override
-    public Evento iniciarEvento(Integer eventoId) {
-        Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
-
-        evento.setEstado("EN_CURSO");
-        return eventoRepository.save(evento);
-    }
-
-    @Override
-    public Evento finalizarEvento(Integer eventoId) {
-        Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
-
-        evento.setEstado("FINALIZADO");
-        return eventoRepository.save(evento);
-    }
-
-    @Override
-    public Evento cancelarEvento(Integer eventoId) {
-        Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
-
-        evento.setEstado("CANCELADO");
-        return eventoRepository.save(evento);
-    }
-
-    @Override
-    public boolean eventoPuedeApostarse(Integer eventoId) {
-        return eventoRepository.findById(eventoId)
-                .map(evento -> "PROGRAMADO".equals(evento.getEstado()) &&
-                        evento.getFechaEvento().isAfter(LocalDateTime.now()))
-                .orElse(false);
-    }
 }

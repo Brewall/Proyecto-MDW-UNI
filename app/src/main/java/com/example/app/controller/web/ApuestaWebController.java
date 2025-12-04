@@ -5,13 +5,12 @@ import com.example.app.service.interfaces.ApuestaService;
 import com.example.app.service.interfaces.EventoService;
 import com.example.app.service.interfaces.CuotaService;
 import com.example.app.service.interfaces.UsuarioService;
-import com.example.app.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,64 +30,35 @@ public class ApuestaWebController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // LISTAR APUESTAS CON FILTROS MEJORADOS
+    // LISTAR APUESTAS CON FILTROS
     @GetMapping
     public String listarApuestas(
-            HttpSession session,
+            Authentication authentication,
             Model model,
             @RequestParam(value = "estado", required = false) String estado,
             @RequestParam(value = "deporte", required = false) String deporte) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
-        // DEBUG: Mostrar parámetros recibidos
-        System.out.println("=== FILTROS RECIBIDOS ===");
-        System.out.println("Estado: " + estado);
-        System.out.println("Deporte: " + deporte);
-
-        // Obtener TODAS las apuestas del usuario primero
-        List<com.example.app.model.Apuesta> todasLasApuestas = apuestaService.findByUsuarioId(usuario.getId());
+        // Obtener todas las apuestas del usuario con evento y cuota cargados
+        List<com.example.app.model.Apuesta> todasLasApuestas = apuestaService.findByUsuarioIdWithEventoAndCuota(usuario.getId());
         List<com.example.app.model.Apuesta> apuestasFiltradas = todasLasApuestas;
-
-        System.out.println("Total apuestas: " + todasLasApuestas.size());
 
         // Aplicar filtro por ESTADO si se especifica
         if (estado != null && !estado.trim().isEmpty()) {
             apuestasFiltradas = apuestasFiltradas.stream()
-                    .filter(apuesta -> {
-                        boolean coincide = estado.equals(apuesta.getEstado());
-                        if (coincide) {
-                            System.out.println("Apuesta coincide con estado " + estado + ": " + apuesta.getEvento().getNombreEvento());
-                        }
-                        return coincide;
-                    })
+                    .filter(apuesta -> estado.equals(apuesta.getEstado()))
                     .collect(Collectors.toList());
-            System.out.println("Después de filtrar por estado: " + apuestasFiltradas.size());
         }
 
         // Aplicar filtro por DEPORTE si se especifica
         if (deporte != null && !deporte.trim().isEmpty()) {
             apuestasFiltradas = apuestasFiltradas.stream()
-                    .filter(apuesta -> {
-                        String deporteEvento = apuesta.getEvento().getDeporte();
-                        boolean coincide = deporte.equals(deporteEvento);
-                        if (coincide) {
-                            System.out.println("Apuesta coincide con deporte " + deporte + ": " + apuesta.getEvento().getNombreEvento() + " (" + deporteEvento + ")");
-                        }
-                        return coincide;
-                    })
+                    .filter(apuesta -> deporte.equals(apuesta.getEvento().getDeporte()))
                     .collect(Collectors.toList());
-            System.out.println("Después de filtrar por deporte: " + apuestasFiltradas.size());
         }
 
-        System.out.println("Apuestas finales: " + apuestasFiltradas.size());
-        System.out.println("=========================");
-
-        // Obtener lista de deportes únicos de las apuestas REALES del usuario
+        // Obtener lista de deportes únicos
         List<String> deportesUnicos = todasLasApuestas.stream()
                 .map(apuesta -> apuesta.getEvento().getDeporte())
                 .distinct()
@@ -106,7 +76,7 @@ public class ApuestaWebController {
         model.addAttribute("apuestasGanadas", apuestasGanadas);
         model.addAttribute("apuestasPerdidas", apuestasPerdidas);
         model.addAttribute("apuestasPendientes", apuestasPendientes);
-        model.addAttribute("deportes", deportesUnicos); // Usar deportes reales del usuario
+        model.addAttribute("deportes", deportesUnicos);
 
         return "apuestas";
     }
@@ -116,25 +86,24 @@ public class ApuestaWebController {
     public String realizarApuesta(
             @RequestParam("cuotaId") Integer cuotaId,
             @RequestParam("monto") Double monto,
-            HttpSession session,
-            Model model) {
+            Authentication authentication,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        if (usuario == null) {
-            return "redirect:/login";
+        // Check if user is INHABILITADO - cannot place bets
+        if ("INHABILITADO".equals(usuario.getEstado())) {
+            redirectAttributes.addFlashAttribute("error", "Tu cuenta está inhabilitada. No puedes realizar apuestas.");
+            return "redirect:/dashboard";
         }
 
         try {
             apuestaService.realizarApuesta(usuario.getId(), cuotaId, monto);
-            model.addAttribute("exito", "✅ Apuesta realizada correctamente por $" + monto);
+            redirectAttributes.addFlashAttribute("exito", "Apuesta realizada correctamente por $" + monto);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", "❌ " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
-        // Recargar datos para el dashboard
-        model.addAttribute("usuario", usuarioService.findById(usuario.getId()).orElse(usuario));
-        model.addAttribute("eventos", eventoService.findEventosDisponiblesParaApuestas());
         return "redirect:/dashboard";
     }
 
@@ -142,20 +111,17 @@ public class ApuestaWebController {
     @PostMapping("/{id}/cancelar")
     public String cancelarApuesta(
             @PathVariable("id") Integer apuestaId,
-            HttpSession session,
-            Model model) {
+            Authentication authentication,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-
-        if (usuario == null) {
-            return "redirect:/login";
-        }
+        // INHABILITADO users can still cancel bets
+        usuarioService.getUsuarioAutenticado(authentication);
 
         try {
             apuestaService.cancelarApuesta(apuestaId);
-            model.addAttribute("exito", "✅ Apuesta cancelada correctamente");
+            redirectAttributes.addFlashAttribute("exito", "puesta cancelada correctamente");
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", "❌ " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error" + e.getMessage());
         }
 
         return "redirect:/apuestas";

@@ -2,6 +2,8 @@ package com.example.app.controller.web;
 
 import com.example.app.model.Usuario;
 import com.example.app.service.interfaces.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,43 +11,50 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import jakarta.servlet.http.HttpSession;
-import java.util.Optional;
-
+/**
+ * Controlador de autenticación.
+ * Spring Security maneja el proceso de login automáticamente.
+ * Este controlador solo muestra las páginas y procesa el registro.
+ */
 @Controller
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UsuarioService usuarioService;
 
+    /**
+     * Muestra la página de login.
+     * Spring Security se encarga del proceso de autenticación.
+     */
     @GetMapping("/login")
-    public String mostrarLogin() {
+    public String mostrarLogin(
+            @RequestParam(value = "error", required = false) String error,
+            @RequestParam(value = "logout", required = false) String logout,
+            Model model) {
+        
+        if (error != null) {
+            model.addAttribute("error", "Correo o contraseña incorrectos");
+        }
+        if (logout != null) {
+            model.addAttribute("mensaje", "Has cerrado sesión correctamente");
+        }
         return "login";
     }
 
-    @PostMapping("/login")
-    public String procesarLogin(
-            @RequestParam String correo,
-            @RequestParam String password,
-            HttpSession session,
-            Model model) {
-
-        Optional<Usuario> usuarioOpt = usuarioService.findByCorreo(correo);
-
-        if (usuarioOpt.isPresent() && usuarioOpt.get().getPassword().equals(password)) {
-            session.setAttribute("usuario", usuarioOpt.get());
-            return "redirect:/dashboard";
-        } else {
-            model.addAttribute("error", "Correo o contraseña incorrectos");
-            return "login";
-        }
-    }
-
+    /**
+     * Muestra la página de registro.
+     */
     @GetMapping("/registro")
     public String mostrarRegistro() {
         return "registro";
     }
 
+    /**
+     * Procesa el formulario de registro.
+     * La contraseña se encripta automáticamente en UsuarioServiceImpl.
+     */
     @PostMapping("/registro")
     public String procesarRegistro(
             @RequestParam String nombreUsuario,
@@ -53,20 +62,27 @@ public class AuthController {
             @RequestParam String password,
             Model model) {
 
+        logger.info("=== REGISTRO: Recibida petición de registro ===");
+        logger.info("Usuario: {}, Correo: {}", nombreUsuario, correo);
+
         try {
             Usuario usuario = new Usuario(nombreUsuario, correo, password);
-            usuarioService.save(usuario);
-            model.addAttribute("exito", "Usuario registrado correctamente");
+            Usuario guardado = usuarioService.save(usuario);
+            logger.info("Usuario registrado exitosamente con ID: {}", guardado.getId());
+            model.addAttribute("exito", "Usuario registrado correctamente. ¡Inicia sesión!");
             return "login";
         } catch (IllegalArgumentException e) {
+            logger.error("Error en registro: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("nombreUsuario", nombreUsuario);
+            model.addAttribute("correo", correo);
+            return "registro";
+        } catch (Exception e) {
+            logger.error("Error inesperado en registro: ", e);
+            model.addAttribute("error", "Error inesperado: " + e.getMessage());
             return "registro";
         }
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
+    // El método de logout ya no es necesario - Spring Security lo maneja
 }

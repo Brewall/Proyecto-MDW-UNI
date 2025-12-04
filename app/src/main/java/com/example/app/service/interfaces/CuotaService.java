@@ -16,13 +16,4 @@ public interface CuotaService {
     // Búsquedas específicas
     List<Cuota> findByEventoId(Integer eventoId);
     List<Cuota> findCuotasDisponiblesByEvento(Integer eventoId);
-    boolean existeCuotaParaEvento(Integer eventoId, String descripcion);
-
-    // Gestión de estados
-    Cuota cerrarCuota(Integer cuotaId);
-    Cuota marcarComoGanadora(Integer cuotaId);
-    Cuota marcarComoPerdedora(Integer cuotaId);
-
-    // Validaciones
-    boolean cuotaEstaDisponible(Integer cuotaId);
 }

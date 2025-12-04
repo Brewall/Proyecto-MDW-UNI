@@ -22,13 +22,18 @@ public class EventoGenerator {
 
     private Random random = new Random();
 
+    // Deportes disponibles
+    private static final String[] DEPORTES = {
+            "Fútbol", "Baloncesto", "Tenis", "Vóley", "Béisbol", "Boxeo", "eSports"
+    };
+
     /**
      * Genera eventos automáticos cada hora (para testing)
      */
     @Scheduled(fixedRate = 3600000) // Cada hora
     public void generarEventosAutomaticos() {
         if (random.nextDouble() < 0.3) { // 30% de probabilidad
-            String deporte = AppConstants.DEPORTES[random.nextInt(AppConstants.DEPORTES.length)];
+            String deporte = DEPORTES[random.nextInt(DEPORTES.length)];
             String equipo1 = generarNombreEquipo();
             String equipo2 = generarNombreEquipo();
 

@@ -14,8 +14,8 @@ public interface ApuestaService {
 
     // Búsquedas específicas
     List<Apuesta> findByUsuarioId(Integer usuarioId);
+    List<Apuesta> findByUsuarioIdWithEventoAndCuota(Integer usuarioId);
     List<Apuesta> findByEventoId(Integer eventoId);
-    List<Apuesta> findByEstado(String estado);
     List<Apuesta> findApuestasPendientesByUsuario(Integer usuarioId);
 
     // Operaciones de negocio
@@ -23,12 +23,6 @@ public interface ApuestaService {
     void procesarApuestaGanada(Integer apuestaId);
     void procesarApuestaPerdida(Integer apuestaId);
     void cancelarApuesta(Integer apuestaId);
-
-    // Procesamiento por eventos
-    void procesarResultadosEvento(Integer eventoId, Integer cuotaGanadoraId);
-
-    // Validaciones
-    boolean puedeRealizarApuesta(Integer usuarioId, Integer cuotaId, Double monto);
 
     List<Apuesta> findByUsuarioIdAndEstado(Integer id, String estado);
 }

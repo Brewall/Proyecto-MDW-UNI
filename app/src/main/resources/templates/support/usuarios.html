@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Soporte</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #8b5cf6;
+            --primary-green: #00ff88;
+            --primary-red: #ff3559;
+            --dark-bg: #0a0f1c;
+            --card-bg: #1a243a;
+            --border-color: #2d3748;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --font-main: 'Inter', sans-serif;
+            --font-accent: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0f1c 0%, #131a2d 100%);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            min-height: 100vh;
+        }
+
+        .navbar-dark.bg-dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+            border-bottom: 1px solid var(--primary-purple);
+        }
+
+        .navbar-brand { font-family: var(--font-accent); font-weight: 700; color: var(--primary-purple) !important; }
+        .badge-support { background: linear-gradient(135deg, var(--primary-purple) 0%, #7c3aed 100%); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; }
+
+        .card-custom { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; }
+        .card-header-custom { background: rgba(139, 92, 246, 0.1); border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem; border-radius: 16px 16px 0 0; }
+
+        .table-dark-custom { 
+            background: transparent !important; 
+            color: var(--text-light) !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-color: var(--text-light) !important;
+            --bs-table-striped-bg: rgba(139, 92, 246, 0.03) !important;
+            --bs-table-striped-color: var(--text-light) !important;
+            --bs-table-hover-bg: rgba(139, 92, 246, 0.08) !important;
+            --bs-table-hover-color: var(--text-light) !important;
+        }
+        .table-dark-custom th { background: rgba(139, 92, 246, 0.1) !important; color: var(--primary-purple) !important; font-weight: 600; border-color: var(--border-color) !important; }
+        .table-dark-custom td { background: transparent !important; border-color: var(--border-color) !important; vertical-align: middle; color: var(--text-light) !important; }
+        .table-dark-custom > tbody > tr:hover > * { background: rgba(139, 92, 246, 0.08) !important; color: var(--text-light) !important; }
+
+        .badge-activo { background: var(--primary-green); color: #000; }
+        .badge-inactivo { background: var(--primary-red); }
+        .badge-suspendido { background: #6c757d; }
+
+        .btn-purple { background: linear-gradient(135deg, var(--primary-purple) 0%, #7c3aed 100%); border: none; color: white; }
+        .btn-purple:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4); color: white; }
+
+        .nav-link-custom { color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; }
+        .nav-link-custom:hover, .nav-link-custom.active { color: var(--primary-purple); background: rgba(139, 92, 246, 0.1); }
+
+        /* Dropdown mejorado */
+        .dropdown-menu-dark-custom { 
+            background: #1e293b; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 0.5rem;
+        }
+        .dropdown-menu-dark-custom .dropdown-item { 
+            color: var(--text-light); 
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .dropdown-menu-dark-custom .dropdown-item:hover { 
+            background: rgba(139, 92, 246, 0.2); 
+        }
+        .dropdown-menu-dark-custom .dropdown-item.text-success { color: var(--primary-green) !important; }
+        .dropdown-menu-dark-custom .dropdown-item.text-success:hover { background: rgba(0, 255, 136, 0.15); }
+        .dropdown-menu-dark-custom .dropdown-item.text-warning { color: #ffc107 !important; }
+        .dropdown-menu-dark-custom .dropdown-item.text-warning:hover { background: rgba(255, 193, 7, 0.15); }
+        .dropdown-menu-dark-custom .dropdown-item.text-danger { color: var(--primary-red) !important; }
+        .dropdown-menu-dark-custom .dropdown-item.text-danger:hover { background: rgba(255, 53, 89, 0.15); }
+
+        /* Form Controls - Mejorado contraste */
+        .form-control-dark { 
+            background: #1e293b; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-light); 
+        }
+        .form-control-dark:focus { 
+            background: #253349; 
+            border-color: var(--primary-purple); 
+            color: var(--text-light); 
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25); 
+        }
+        .form-control-dark::placeholder { color: #64748b; }
+        
+        /* Select - Mejorado contraste */
+        .form-select-dark { 
+            background: #1e293b url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e2e8f0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") no-repeat right 0.75rem center/16px 12px;
+            border: 1px solid var(--border-color); 
+            color: var(--text-light); 
+        }
+        .form-select-dark:focus { 
+            background: #253349 url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b5cf6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") no-repeat right 0.75rem center/16px 12px;
+            border-color: var(--primary-purple); 
+            color: var(--text-light); 
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25); 
+        }
+        .form-select-dark option {
+            background-color: #1e293b;
+            color: var(--text-light);
+            padding: 10px;
+        }
+
+        /* Labels */
+        .form-label { color: var(--text-light); font-weight: 500; margin-bottom: 0.5rem; }
+
+        /* Botón outline secondary mejorado */
+        .btn-outline-secondary { 
+            border-color: var(--border-color); 
+            color: var(--text-muted); 
+        }
+        .btn-outline-secondary:hover { 
+            background: rgba(255,255,255,0.1); 
+            border-color: var(--text-muted); 
+            color: var(--text-light); 
+        }
+
+        /* Card body padding */
+        .card-body { padding: 1.5rem; }
+
+        /* Btn close */
+        .btn-close { filter: invert(1); opacity: 0.7; }
+        .btn-close:hover { opacity: 1; }
+
+        .alert-success { background: rgba(0, 255, 136, 0.15); border: 1px solid var(--primary-green); color: var(--primary-green); }
+        .alert-danger { background: rgba(255, 53, 89, 0.15); border: 1px solid var(--primary-red); color: var(--primary-red); }
+
+        /* Toggle buttons para estado */
+        .btn-toggle-estado {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+        .btn-toggle-activo {
+            background: transparent;
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+        .btn-toggle-activo:hover, .btn-toggle-activo.active {
+            background: var(--primary-green);
+            color: #000;
+            transform: scale(1.05);
+        }
+        .btn-toggle-inactivo {
+            background: transparent;
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+        .btn-toggle-inactivo:hover, .btn-toggle-inactivo.active {
+            background: var(--primary-red);
+            color: #fff;
+            transform: scale(1.05);
+        }
+        .btn-group-estado {
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/support/dashboard}">
+            <i class="fas fa-headset me-2"></i>Panel de Soporte
+            <span class="badge badge-support ms-2">SUPPORT</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link nav-link-custom" th:href="@{/support/dashboard}"><i class="fas fa-chart-line me-1"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link nav-link-custom active" th:href="@{/support/usuarios}"><i class="fas fa-users me-1"></i> Usuarios</a></li>
+                <li class="nav-item"><a class="nav-link nav-link-custom" th:href="@{/support/reclamos}"><i class="fas fa-ticket-alt me-1"></i> Reclamos</a></li>
+            </ul>
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-shield me-2"></i><span th:text="${usuario.nombreUsuario}">SUPPORT</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0 p-0">
+                            <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido Principal -->
+<main class="container mt-4">
+    <!-- Mensajes -->
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Título y Filtros -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users me-2" style="color: var(--primary-purple);"></i>Gestión de Usuarios</h2>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card-custom mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/support/usuarios}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="text" name="buscar" class="form-control form-control-dark" placeholder="Nombre o correo..." th:value="${param.buscar}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select form-select-dark">
+                        <option value="">Todos</option>
+                        <option value="ACTIVO" th:selected="${param.estado == 'ACTIVO'}">Activos</option>
+                        <option value="INHABILITADO" th:selected="${param.estado == 'INHABILITADO'}">Inhabilitados</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-purple w-100"><i class="fas fa-search me-2"></i>Filtrar</button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a th:href="@{/support/usuarios}" class="btn btn-outline-secondary w-100"><i class="fas fa-times me-2"></i>Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card-custom">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lista de Usuarios</h5>
+            <span class="badge bg-secondary" th:text="'Total: ' + ${totalUsuarios}">Total: 0</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Saldo</th>
+                            <th>Fecha Registro</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${usuarios}">
+                            <td th:text="${u.id}">#1</td>
+                            <td>
+                                <i class="fas fa-user me-2 text-muted"></i>
+                                <span th:text="${u.nombreUsuario}">Usuario</span>
+                            </td>
+                            <td th:text="${u.correo}">correo@example.com</td>
+                            <td>
+                                <span class="text-success" th:text="'S/ ' + ${#numbers.formatDecimal(u.saldo, 1, 2)}">S/ 0.00</span>
+                            </td>
+                            <td th:text="${#temporals.format(u.fechaRegistro, 'dd/MM/yyyy')}">01/01/2025</td>
+                            <td>
+                                <span class="badge badge-activo" th:if="${u.estado == 'ACTIVO'}">ACTIVO</span>
+                                <span class="badge badge-inactivo" th:if="${u.estado == 'INHABILITADO'}">INHABILITADO</span>
+                            </td>
+                            <td>
+                                <div class="btn-group-estado">
+                                    <!-- Botón Activar -->
+                                    <form th:action="@{/support/usuarios/{id}/cambiar-estado(id=${u.id})}" method="post" style="display: inline;">
+                                        <input type="hidden" name="estado" value="ACTIVO">
+                                        <button type="submit" 
+                                                class="btn btn-toggle-estado btn-toggle-activo"
+                                                th:classappend="${u.estado == 'ACTIVO'} ? 'active disabled' : ''"
+                                                th:disabled="${u.estado == 'ACTIVO'}"
+                                                title="Activar usuario">
+                                            <i class="fas fa-check me-1"></i>Activo
+                                        </button>
+                                    </form>
+                                    <!-- Botón Inhabilitar -->
+                                    <form th:action="@{/support/usuarios/{id}/cambiar-estado(id=${u.id})}" method="post" style="display: inline;">
+                                        <input type="hidden" name="estado" value="INHABILITADO">
+                                        <button type="submit" 
+                                                class="btn btn-toggle-estado btn-toggle-inactivo"
+                                                th:classappend="${u.estado == 'INHABILITADO'} ? 'active disabled' : ''"
+                                                th:disabled="${u.estado == 'INHABILITADO'}"
+                                                title="Inhabilitar usuario">
+                                            <i class="fas fa-ban me-1"></i>Inhabilitado
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(usuarios)}">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-users-slash me-2"></i>No se encontraron usuarios
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+

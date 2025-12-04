@@ -5,11 +5,11 @@ import com.example.app.service.interfaces.UsuarioService;
 import com.example.app.service.interfaces.ApuestaService;
 import com.example.app.service.interfaces.TransaccionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -26,16 +26,8 @@ public class PerfilController {
     private TransaccionService transaccionService;
 
     @GetMapping
-    public String mostrarPerfil(HttpSession session, Model model) {
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
-
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
-        // Actualizar usuario desde BD
-        Usuario usuarioActualizado = usuarioService.findById(usuario.getId()).orElse(usuario);
-        session.setAttribute("usuario", usuarioActualizado);
+    public String mostrarPerfil(Authentication authentication, Model model) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
         // Estadísticas para el perfil
         List<com.example.app.model.Apuesta> apuestasUsuario = apuestaService.findByUsuarioId(usuario.getId());
@@ -43,7 +35,7 @@ public class PerfilController {
         long apuestasGanadas = apuestasUsuario.stream().filter(a -> "GANADA".equals(a.getEstado())).count();
         long apuestasPerdidas = apuestasUsuario.stream().filter(a -> "PERDIDA".equals(a.getEstado())).count();
 
-        model.addAttribute("usuario", usuarioActualizado);
+        model.addAttribute("usuario", usuario);
         model.addAttribute("totalApuestas", totalApuestas);
         model.addAttribute("apuestasGanadas", apuestasGanadas);
         model.addAttribute("apuestasPerdidas", apuestasPerdidas);
@@ -60,18 +52,14 @@ public class PerfilController {
     @PostMapping("/depositar")
     public String depositarSaldo(
             @RequestParam("monto") Double monto,
-            HttpSession session,
+            Authentication authentication,
             Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
+        // INHABILITADO users can still deposit
         try {
-            Usuario usuarioActualizado = usuarioService.depositarSaldo(usuario.getId(), monto);
-            session.setAttribute("usuario", usuarioActualizado);
+            usuarioService.depositarSaldo(usuario.getId(), monto);
 
             // Registrar transacción
             transaccionService.registrarDeposito(usuario.getId(), monto, "Depósito desde perfil");
@@ -82,24 +70,20 @@ public class PerfilController {
         }
 
         // Recargar datos
-        return mostrarPerfil(session, model);
+        return mostrarPerfil(authentication, model);
     }
 
     @PostMapping("/retirar")
     public String retirarSaldo(
             @RequestParam("monto") Double monto,
-            HttpSession session,
+            Authentication authentication,
             Model model) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
+        // INHABILITADO users can still withdraw
         try {
-            Usuario usuarioActualizado = usuarioService.retirarSaldo(usuario.getId(), monto);
-            session.setAttribute("usuario", usuarioActualizado);
+            usuarioService.retirarSaldo(usuario.getId(), monto);
 
             // Registrar transacción
             transaccionService.registrarRetiro(usuario.getId(), monto, "Retiro desde perfil");
@@ -110,6 +94,6 @@ public class PerfilController {
         }
 
         // Recargar datos
-        return mostrarPerfil(session, model);
+        return mostrarPerfil(authentication, model);
     }
 }

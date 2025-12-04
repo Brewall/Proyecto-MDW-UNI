@@ -2,6 +2,8 @@ package com.example.app.repository;
 
 import com.example.app.model.Apuesta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -10,6 +12,10 @@ public interface ApuestaRepository extends JpaRepository<Apuesta, Integer> {
 
     // Buscar apuestas por usuario
     List<Apuesta> findByUsuarioId(Integer usuarioId);
+
+    // Buscar apuestas por usuario con evento y cuota cargados (evita LazyInitializationException)
+    @Query("SELECT a FROM Apuesta a JOIN FETCH a.evento JOIN FETCH a.cuota WHERE a.usuario.id = :usuarioId ORDER BY a.fechaApuesta DESC")
+    List<Apuesta> findByUsuarioIdWithEventoAndCuota(@Param("usuarioId") Integer usuarioId);
 
     // Buscar apuestas por evento
     List<Apuesta> findByEventoId(Integer eventoId);

@@ -18,12 +18,4 @@ public interface EventoService {
     List<Evento> findByDeporte(String deporte);
     List<Evento> findEventosProgramados();
     List<Evento> findEventosDisponiblesParaApuestas();
-
-    // Gestión de estados
-    Evento iniciarEvento(Integer eventoId);
-    Evento finalizarEvento(Integer eventoId);
-    Evento cancelarEvento(Integer eventoId);
-
-    // Validaciones
-    boolean eventoPuedeApostarse(Integer eventoId);
 }

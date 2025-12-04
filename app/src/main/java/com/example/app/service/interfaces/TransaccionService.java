@@ -14,7 +14,6 @@ public interface TransaccionService {
     // Búsquedas específicas
     List<Transaccion> findByUsuarioId(Integer usuarioId);
     List<Transaccion> findByTipo(String tipo);
-    List<Transaccion> findHistorialUsuario(Integer usuarioId);
 
     // Operaciones de negocio
     Transaccion registrarDeposito(Integer usuarioId, Double monto, String descripcion);
@@ -23,7 +22,6 @@ public interface TransaccionService {
     Transaccion registrarRetiro(Integer usuarioId, Double monto, String descripcion);
 
     // Consultas financieras
-    Double calcularBalanceUsuario(Integer usuarioId);
     Double calcularGananciasTotalesUsuario(Integer usuarioId);
 
     List<Transaccion> findByUsuarioIdAndTipo(Integer id, String tipo);
