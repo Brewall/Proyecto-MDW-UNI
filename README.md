@@ -1,6 +1,4 @@
-
-<<<<<<< HEAD
-=======
+# Sistema de Apuestas Deportivas
 Aplicación web de casa de apuestas desarrollada con Spring Boot 3.5.4 y Java 21. El sistema permite a los usuarios realizar apuestas en eventos deportivos, gestionar su saldo mediante depósitos y retiros, y enviar reclamos al equipo de soporte.
 
 ## Descripción del Proyecto
