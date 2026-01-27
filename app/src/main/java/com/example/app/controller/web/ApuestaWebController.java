@@ -30,7 +30,6 @@ public class ApuestaWebController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // LISTAR APUESTAS CON FILTROS
     @GetMapping
     public String listarApuestas(
             Authentication authentication,
@@ -40,31 +39,26 @@ public class ApuestaWebController {
 
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // Obtener todas las apuestas del usuario con evento y cuota cargados
         List<com.example.app.model.Apuesta> todasLasApuestas = apuestaService.findByUsuarioIdWithEventoAndCuota(usuario.getId());
         List<com.example.app.model.Apuesta> apuestasFiltradas = todasLasApuestas;
 
-        // Aplicar filtro por ESTADO si se especifica
         if (estado != null && !estado.trim().isEmpty()) {
             apuestasFiltradas = apuestasFiltradas.stream()
                     .filter(apuesta -> estado.equals(apuesta.getEstado()))
                     .collect(Collectors.toList());
         }
 
-        // Aplicar filtro por DEPORTE si se especifica
         if (deporte != null && !deporte.trim().isEmpty()) {
             apuestasFiltradas = apuestasFiltradas.stream()
                     .filter(apuesta -> deporte.equals(apuesta.getEvento().getDeporte()))
                     .collect(Collectors.toList());
         }
 
-        // Obtener lista de deportes únicos
         List<String> deportesUnicos = todasLasApuestas.stream()
                 .map(apuesta -> apuesta.getEvento().getDeporte())
                 .distinct()
                 .collect(Collectors.toList());
 
-        // Calcular estadísticas
         long totalApuestas = apuestasFiltradas.size();
         long apuestasGanadas = apuestasFiltradas.stream().filter(a -> "GANADA".equals(a.getEstado())).count();
         long apuestasPerdidas = apuestasFiltradas.stream().filter(a -> "PERDIDA".equals(a.getEstado())).count();
@@ -81,7 +75,6 @@ public class ApuestaWebController {
         return "apuestas";
     }
 
-    // REALIZAR APUESTA (desde dashboard)
     @PostMapping("/realizar")
     public String realizarApuesta(
             @RequestParam("cuotaId") Integer cuotaId,
@@ -91,7 +84,6 @@ public class ApuestaWebController {
 
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // Check if user is INHABILITADO - cannot place bets
         if ("INHABILITADO".equals(usuario.getEstado())) {
             redirectAttributes.addFlashAttribute("error", "Tu cuenta está inhabilitada. No puedes realizar apuestas.");
             return "redirect:/dashboard";
@@ -107,21 +99,19 @@ public class ApuestaWebController {
         return "redirect:/dashboard";
     }
 
-    // CANCELAR APUESTA
     @PostMapping("/{id}/cancelar")
     public String cancelarApuesta(
             @PathVariable("id") Integer apuestaId,
             Authentication authentication,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
-        // INHABILITADO users can still cancel bets
         usuarioService.getUsuarioAutenticado(authentication);
 
         try {
             apuestaService.cancelarApuesta(apuestaId);
-            redirectAttributes.addFlashAttribute("exito", "puesta cancelada correctamente");
+            redirectAttributes.addFlashAttribute("exito", "Apuesta cancelada correctamente");
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error" + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/apuestas";

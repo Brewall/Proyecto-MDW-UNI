@@ -31,7 +31,6 @@ public class Evento {
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Cuota> cuotas = new ArrayList<>();
 
-    // --- CONSTRUCTORES ---
     public Evento() {}
 
     public Evento(String nombreEvento, String deporte, LocalDateTime fechaEvento) {
@@ -40,7 +39,7 @@ public class Evento {
         this.fechaEvento = fechaEvento;
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

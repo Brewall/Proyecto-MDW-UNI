@@ -13,18 +13,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Configuración del encoder de contraseñas.
-     * BCrypt es el estándar de la industria para hash de contraseñas.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Handler personalizado para redirigir según el rol después del login.
-     */
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
@@ -39,16 +32,10 @@ public class SecurityConfig {
         };
     }
 
-    /**
-     * Configuración principal de seguridad.
-     * Define qué rutas son públicas y cuáles requieren autenticación.
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Configuración de autorización de rutas
             .authorizeHttpRequests(auth -> auth
-                // Rutas públicas (accesibles sin login)
                 .requestMatchers(
                     "/login",
                     "/registro",
@@ -59,30 +46,24 @@ public class SecurityConfig {
                     "/error"
                 ).permitAll()
                 
-                // Support-only routes (admin panel)
                 .requestMatchers("/support/**").hasRole("SUPPORT")
                 
-                // User-only routes (betting, deposits, etc.)
                 .requestMatchers("/apuestas/**").hasRole("USER")
                 .requestMatchers("/perfil/depositar", "/perfil/retirar").hasRole("USER")
                 
-                // Rutas compartidas (ambos roles pueden acceder)
                 .requestMatchers("/dashboard", "/perfil", "/transacciones", "/reclamos").authenticated()
                 
-                // Todas las demás rutas requieren autenticación
                 .anyRequest().authenticated()
             )
-            // Configuración del formulario de login
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .usernameParameter("correo")
                 .passwordParameter("password")
-                .successHandler(successHandler())       // Redirigir según rol
+                .successHandler(successHandler())
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
-            // Configuración de logout
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")

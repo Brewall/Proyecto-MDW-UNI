@@ -35,7 +35,6 @@ public class Apuesta {
     @Column(name = "ganancia_potencial")
     private Double gananciaPotencial;
 
-    // --- CONSTRUCTORES ---
     public Apuesta() {}
 
     public Apuesta(Usuario usuario, Evento evento, Cuota cuota, Double monto) {
@@ -46,7 +45,7 @@ public class Apuesta {
         this.gananciaPotencial = monto * cuota.getValor();
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
@@ -62,7 +61,6 @@ public class Apuesta {
     public Double getMonto() { return monto; }
     public void setMonto(Double monto) {
         this.monto = monto;
-        // Recalcular ganancia potencial si la cuota está disponible
         if (this.cuota != null && this.cuota.getValor() != null) {
             this.gananciaPotencial = monto * this.cuota.getValor();
         }

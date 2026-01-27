@@ -29,7 +29,6 @@ public class PerfilController {
     public String mostrarPerfil(Authentication authentication, Model model) {
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // Estadísticas para el perfil
         List<com.example.app.model.Apuesta> apuestasUsuario = apuestaService.findByUsuarioId(usuario.getId());
         long totalApuestas = apuestasUsuario.size();
         long apuestasGanadas = apuestasUsuario.stream().filter(a -> "GANADA".equals(a.getEstado())).count();
@@ -57,11 +56,8 @@ public class PerfilController {
 
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // INHABILITADO users can still deposit
         try {
             usuarioService.depositarSaldo(usuario.getId(), monto);
-
-            // Registrar transacción
             transaccionService.registrarDeposito(usuario.getId(), monto, "Depósito desde perfil");
 
             model.addAttribute("exito", "Saldo depositado correctamente: $" + monto);
@@ -81,11 +77,8 @@ public class PerfilController {
 
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // INHABILITADO users can still withdraw
         try {
             usuarioService.retirarSaldo(usuario.getId(), monto);
-
-            // Registrar transacción
             transaccionService.registrarRetiro(usuario.getId(), monto, "Retiro desde perfil");
 
             model.addAttribute("exito", "Saldo retirado correctamente: $" + monto);
@@ -93,7 +86,6 @@ public class PerfilController {
             model.addAttribute("error", e.getMessage());
         }
 
-        // Recargar datos
         return mostrarPerfil(authentication, model);
     }
 }

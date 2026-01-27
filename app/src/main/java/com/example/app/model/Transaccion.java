@@ -16,10 +16,10 @@ public class Transaccion {
     private Usuario usuario;
 
     @Column(nullable = false, length = 10)
-    private String tipo; // DEPOSITO, RETIRO, APUESTA, GANANCIA
+    private String tipo;
 
     @Column(nullable = false)
-    private Double monto; // Positivo: deposito/ganancia, Negativo: apuesta/retiro
+    private Double monto;
 
     @Column(length = 100)
     private String descripcion;
@@ -27,7 +27,6 @@ public class Transaccion {
     @Column(name = "fecha_transaccion")
     private LocalDateTime fechaTransaccion = LocalDateTime.now();
 
-    // --- CONSTRUCTORES ---
     public Transaccion() {}
 
     public Transaccion(Usuario usuario, String tipo, Double monto, String descripcion) {
@@ -37,7 +36,7 @@ public class Transaccion {
         this.descripcion = descripcion;
     }
 
-    // --- CONSTRUCTORES ESPECÍFICOS ---
+    // Métodos para crear transacciones específicas
     public static Transaccion crearDeposito(Usuario usuario, Double monto, String descripcion) {
         return new Transaccion(usuario, "DEPOSITO", Math.abs(monto), descripcion);
     }
@@ -54,7 +53,7 @@ public class Transaccion {
         return new Transaccion(usuario, "RETIRO", -Math.abs(monto), descripcion);
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
@@ -73,7 +72,6 @@ public class Transaccion {
     public LocalDateTime getFechaTransaccion() { return fechaTransaccion; }
     public void setFechaTransaccion(LocalDateTime fechaTransaccion) { this.fechaTransaccion = fechaTransaccion; }
 
-    // --- MÉTODO UTILITARIO ---
     public boolean esPositiva() {
         return monto >= 0;
     }

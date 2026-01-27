@@ -27,12 +27,11 @@ public class Usuario {
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     @Column(length = 15)
-    private String estado = "ACTIVO";  // ACTIVO or INHABILITADO
+    private String estado = "ACTIVO";
 
     @Column(length = 20)
-    private String rol = "USER";  // USER or SUPPORT
+    private String rol = "USER";
 
-    // --- CONSTRUCTORES ---
     public Usuario() {}
 
     public Usuario(String nombreUsuario, String correo, String password) {
@@ -41,7 +40,7 @@ public class Usuario {
         this.password = password;
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
@@ -66,7 +65,6 @@ public class Usuario {
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
 
-    // --- UTILITY METHODS ---
     public boolean isSupport() {
         return "SUPPORT".equals(rol);
     }

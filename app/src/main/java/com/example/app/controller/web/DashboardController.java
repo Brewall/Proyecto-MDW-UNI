@@ -36,15 +36,12 @@ public class DashboardController {
 
     @GetMapping({"/", "/dashboard"})
     public String dashboard(Authentication authentication, Model model) {
-        // Obtener usuario desde Spring Security
         String correo = authentication.getName();
         Usuario usuario = usuarioService.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Cargar datos para el dashboard
         List<com.example.app.model.Evento> eventos = eventoService.findEventosDisponiblesParaApuestas();
 
-        // Preparar datos para la vista
         Map<Integer, List<com.example.app.model.Cuota>> cuotasPorEvento = new HashMap<>();
         if (eventos != null) {
             for (com.example.app.model.Evento evento : eventos) {

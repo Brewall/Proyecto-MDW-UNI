@@ -20,7 +20,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;  // BCrypt inyectado automáticamente
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<Usuario> findAll() {
@@ -34,7 +34,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario save(Usuario usuario) {
-        // Validaciones básicas
         if (usuario.getCorreo() == null || usuario.getCorreo().trim().isEmpty()) {
             throw new IllegalArgumentException("El correo es obligatorio");
         }
@@ -42,12 +41,10 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new IllegalArgumentException("La contraseña es obligatoria");
         }
 
-        // Verificar que el correo no exista
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new IllegalArgumentException("Ya existe un usuario con ese correo");
         }
 
-        // ENCRIPTAR contraseña con BCrypt antes de guardar
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
         return usuarioRepository.save(usuario);
@@ -59,7 +56,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .map(existing -> {
                     existing.setNombreUsuario(usuario.getNombreUsuario());
                     existing.setCorreo(usuario.getCorreo());
-                    // No actualizamos password aquí (debería ser endpoint separado)
                     existing.setEstado(usuario.getEstado());
                     return usuarioRepository.save(existing);
                 })
