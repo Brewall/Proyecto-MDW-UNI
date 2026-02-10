@@ -23,7 +23,6 @@ public class Cuota {
     @Column(length = 15)
     private String estado = "DISPONIBLE";
 
-    // --- CONSTRUCTORES ---
     public Cuota() {}
 
     public Cuota(Evento evento, String descripcion, Double valor) {
@@ -32,7 +31,7 @@ public class Cuota {
         this.valor = valor;
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

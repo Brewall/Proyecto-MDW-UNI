@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Controller for SUPPORT role functionalities.
- * Allows managing users and responding to claims.
+ * Controlador para funcionalidades de soporte.
  */
 @Controller
 @RequestMapping("/support")
@@ -27,22 +26,16 @@ public class SupportController {
     @Autowired
     private ReclamoService reclamoService;
 
-    /**
-     * Gets the authenticated support user.
-     */
     private Usuario getSupportUser(Authentication authentication) {
         String correo = authentication.getName();
         return usuarioService.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-    // ==================== DASHBOARD ====================
-
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {
         Usuario supportUser = getSupportUser(authentication);
 
-        // General statistics
         List<Usuario> allUsers = usuarioService.findAll();
         List<Reclamo> allClaims = reclamoService.findAll();
 
@@ -66,7 +59,6 @@ public class SupportController {
         model.addAttribute("reclamosEnRevision", reclamosEnRevision);
         model.addAttribute("reclamosResueltos", reclamosResueltos);
 
-        // Latest pending claims
         List<Reclamo> latestPendingClaims = allClaims.stream()
                 .filter(r -> "PENDIENTE".equals(r.getEstado()))
                 .limit(5)
@@ -75,8 +67,6 @@ public class SupportController {
 
         return "support/dashboard";
     }
-
-    // ==================== USER MANAGEMENT ======================================
 
     @GetMapping("/usuarios")
     public String listUsers(
@@ -88,19 +78,16 @@ public class SupportController {
         Usuario supportUser = getSupportUser(authentication);
         List<Usuario> usuarios = usuarioService.findAll();
 
-        // Filter only users (not support)
         usuarios = usuarios.stream()
                 .filter(u -> "USER".equals(u.getRol()))
                 .toList();
 
-        // Filter by status if specified
         if (estado != null && !estado.isEmpty()) {
             usuarios = usuarios.stream()
                     .filter(u -> estado.equals(u.getEstado()))
                     .toList();
         }
 
-        // Filter by search (name or email)
         if (buscar != null && !buscar.trim().isEmpty()) {
             String searchTerm = buscar.toLowerCase().trim();
             usuarios = usuarios.stream()
@@ -127,13 +114,11 @@ public class SupportController {
             Usuario usuarioActualizar = usuarioService.findById(usuarioId)
                     .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-            // Validate it's not a support user
             if ("SUPPORT".equals(usuarioActualizar.getRol())) {
                 redirectAttributes.addFlashAttribute("error", "No puedes modificar usuarios de soporte");
                 return "redirect:/support/usuarios";
             }
 
-            // Change status
             usuarioActualizar.setEstado(nuevoEstado);
             usuarioService.update(usuarioId, usuarioActualizar);
 
@@ -145,8 +130,6 @@ public class SupportController {
         return "redirect:/support/usuarios";
     }
 
-    // ==================== CLAIMS MANAGEMENT ======================================
-
     @GetMapping("/reclamos")
     public String listClaims(
             Authentication authentication,
@@ -157,21 +140,18 @@ public class SupportController {
         Usuario supportUser = getSupportUser(authentication);
         List<Reclamo> reclamos = reclamoService.findAll();
 
-        // Filter by status if specified
         if (estado != null && !estado.isEmpty()) {
             reclamos = reclamos.stream()
                     .filter(r -> estado.equals(r.getEstado()))
                     .toList();
         }
 
-        // Filter by category if specified
         if (categoria != null && !categoria.isEmpty()) {
             reclamos = reclamos.stream()
                     .filter(r -> categoria.equals(r.getCategoria()))
                     .toList();
         }
 
-        // Statistics
         long pendientes = reclamos.stream().filter(r -> "PENDIENTE".equals(r.getEstado())).count();
         long enRevision = reclamos.stream().filter(r -> "EN_REVISION".equals(r.getEstado())).count();
         long resueltos = reclamos.stream().filter(r -> "RESUELTO".equals(r.getEstado())).count();

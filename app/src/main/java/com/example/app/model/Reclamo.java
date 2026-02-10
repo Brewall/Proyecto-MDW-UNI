@@ -22,7 +22,7 @@ public class Reclamo {
     private String descripcion;
 
     @Column(length = 20)
-    private String estado = "PENDIENTE"; // PENDIENTE, EN_REVISION, RESUELTO
+    private String estado = "PENDIENTE";
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
@@ -34,9 +34,8 @@ public class Reclamo {
     private String respuestaAdmin;
 
     @Column(length = 50)
-    private String categoria; // PROBLEMA_TECNICO, PROBLEMA_PAGO, CONSULTA, SUGERENCIA
+    private String categoria;
 
-    // --- CONSTRUCTORES ---
     public Reclamo() {}
 
     public Reclamo(Usuario usuario, String titulo, String descripcion, String categoria) {
@@ -46,7 +45,7 @@ public class Reclamo {
         this.categoria = categoria;
     }
 
-    // --- GETTERS Y SETTERS ---
+    // Getters y Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
@@ -74,7 +73,6 @@ public class Reclamo {
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    // --- MÉTODOS UTILES ---
     public boolean isResuelto() {
         return "RESUELTO".equals(estado);
     }

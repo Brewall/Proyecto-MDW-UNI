@@ -37,18 +37,15 @@ public class TransaccionWebController {
 
         Usuario usuario = usuarioService.getUsuarioAutenticado(authentication);
 
-        // Obtener todas las transacciones del usuario
         List<com.example.app.model.Transaccion> todasLasTransacciones = transaccionService.findByUsuarioId(usuario.getId());
         List<com.example.app.model.Transaccion> transaccionesFiltradas = todasLasTransacciones;
 
-        // Aplicar filtro por TIPO si se especifica
         if (tipo != null && !tipo.trim().isEmpty()) {
             transaccionesFiltradas = transaccionesFiltradas.stream()
                     .filter(transaccion -> tipo.equals(transaccion.getTipo()))
                     .collect(Collectors.toList());
         }
 
-        // Aplicar filtro de FECHAS si se especifican
         if (fechaInicio != null && !fechaInicio.trim().isEmpty() &&
                 fechaFin != null && !fechaFin.trim().isEmpty()) {
             try {
@@ -61,12 +58,9 @@ public class TransaccionWebController {
                                     !t.getFechaTransaccion().isAfter(fin))
                         .collect(Collectors.toList());
             } catch (Exception e) {
-                // Ignorar error de parseo de fechas
             }
         }
 
-        // Calcular totales
-        // Identificar apuestas canceladas (tienen devolución asociada)
         java.util.Set<String> apuestasCanceladas = transaccionesFiltradas.stream()
                 .filter(t -> t.getDescripcion() != null && t.getDescripcion().startsWith("Devolución apuesta cancelada #"))
                 .map(t -> t.getDescripcion().replace("Devolución apuesta cancelada #", ""))
@@ -74,7 +68,6 @@ public class TransaccionWebController {
 
         Double totalDepositos = transaccionesFiltradas.stream()
                 .filter(t -> "DEPOSITO".equals(t.getTipo()))
-                // Excluir devoluciones de apuestas canceladas del total de depósitos
                 .filter(t -> t.getDescripcion() == null || !t.getDescripcion().startsWith("Devolución apuesta cancelada"))
                 .mapToDouble(com.example.app.model.Transaccion::getMonto)
                 .sum();
@@ -86,10 +79,8 @@ public class TransaccionWebController {
 
         Double totalApuestas = transaccionesFiltradas.stream()
                 .filter(t -> "APUESTA".equals(t.getTipo()))
-                // Excluir apuestas que fueron canceladas
                 .filter(t -> {
                     if (t.getDescripcion() == null) return true;
-                    // Extraer el ID de la apuesta de la descripción (ej: "Apuesta evento: ... #123")
                     String desc = t.getDescripcion();
                     for (String idCancelada : apuestasCanceladas) {
                         if (desc.endsWith("#" + idCancelada) || desc.contains("apuesta #" + idCancelada)) {
@@ -110,12 +101,9 @@ public class TransaccionWebController {
                 .mapToDouble(com.example.app.model.Transaccion::getMonto)
                 .sum();
 
-        // Calcular saldos posteriores para cada transacción
-        // Primero ordenamos todas las transacciones por fecha (más antigua primero)
         List<com.example.app.model.Transaccion> todasOrdenadas = new ArrayList<>(todasLasTransacciones);
         todasOrdenadas.sort(Comparator.comparing(com.example.app.model.Transaccion::getFechaTransaccion));
         
-        // Calculamos el saldo acumulado para cada transacción
         double saldoAcumulado = 0.0;
         java.util.Map<Integer, Double> saldosPorTransaccion = new java.util.HashMap<>();
         for (com.example.app.model.Transaccion t : todasOrdenadas) {
@@ -123,7 +111,6 @@ public class TransaccionWebController {
             saldosPorTransaccion.put(t.getId(), saldoAcumulado);
         }
         
-        // Crear lista de saldos posteriores en el mismo orden que transaccionesFiltradas
         List<Double> saldosPosteriores = new ArrayList<>();
         for (com.example.app.model.Transaccion t : transaccionesFiltradas) {
             saldosPosteriores.add(saldosPorTransaccion.getOrDefault(t.getId(), 0.0));

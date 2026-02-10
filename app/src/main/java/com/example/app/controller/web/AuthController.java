@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Controlador de autenticación.
- * Spring Security maneja el proceso de login automáticamente.
- * Este controlador solo muestra las páginas y procesa el registro.
+ * Controlador de autenticación y registro de usuarios.
  */
 @Controller
 public class AuthController {
@@ -24,10 +22,6 @@ public class AuthController {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Muestra la página de login.
-     * Spring Security se encarga del proceso de autenticación.
-     */
     @GetMapping("/login")
     public String mostrarLogin(
             @RequestParam(value = "error", required = false) String error,
@@ -43,18 +37,11 @@ public class AuthController {
         return "login";
     }
 
-    /**
-     * Muestra la página de registro.
-     */
     @GetMapping("/registro")
     public String mostrarRegistro() {
         return "registro";
     }
 
-    /**
-     * Procesa el formulario de registro.
-     * La contraseña se encripta automáticamente en UsuarioServiceImpl.
-     */
     @PostMapping("/registro")
     public String procesarRegistro(
             @RequestParam String nombreUsuario,
@@ -83,6 +70,4 @@ public class AuthController {
             return "registro";
         }
     }
-
-    // El método de logout ya no es necesario - Spring Security lo maneja
 }

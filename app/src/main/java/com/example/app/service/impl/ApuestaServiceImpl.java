@@ -74,12 +74,10 @@ public class ApuestaServiceImpl implements ApuestaService {
 
     @Override
     public Apuesta realizarApuesta(Integer usuarioId, Integer cuotaId, Double monto) {
-        // Validar monto mínimo
         if (monto < 1.00) {
             throw new IllegalArgumentException("El monto mínimo de apuesta es $1.00");
         }
 
-        // Validar usuario
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         
@@ -91,12 +89,10 @@ public class ApuestaServiceImpl implements ApuestaService {
             throw new IllegalArgumentException("Tu cuenta no está activa. No puedes realizar apuestas.");
         }
 
-        // Validar saldo
         if (usuario.getSaldo() < monto) {
             throw new IllegalArgumentException("Saldo insuficiente. Tu saldo es $" + String.format("%.2f", usuario.getSaldo()));
         }
 
-        // Validar cuota
         Cuota cuota = cuotaRepository.findById(cuotaId)
                 .orElseThrow(() -> new IllegalArgumentException("Cuota no encontrada"));
         
@@ -104,7 +100,6 @@ public class ApuestaServiceImpl implements ApuestaService {
             throw new IllegalArgumentException("Esta cuota ya no está disponible para apostar");
         }
 
-        // Validar evento
         Evento evento = cuota.getEvento();
         if (!"PROGRAMADO".equals(evento.getEstado())) {
             throw new IllegalArgumentException("Este evento ya no acepta apuestas");
@@ -114,15 +109,12 @@ public class ApuestaServiceImpl implements ApuestaService {
             throw new IllegalArgumentException("Este evento ya ha comenzado o finalizado");
         }
 
-        // Descontar saldo
         usuario.setSaldo(usuario.getSaldo() - monto);
         usuarioRepository.save(usuario);
 
-        // Crear apuesta
         Apuesta apuesta = new Apuesta(usuario, cuota.getEvento(), cuota, monto);
         Apuesta apuestaGuardada = apuestaRepository.save(apuesta);
 
-        // Registrar transacción (incluir ID de apuesta para poder correlacionar con cancelaciones)
         transaccionService.registrarApuesta(usuarioId, monto,
                 "Apuesta en " + cuota.getEvento().getNombreEvento() + " #" + apuestaGuardada.getId());
 
@@ -137,13 +129,11 @@ public class ApuestaServiceImpl implements ApuestaService {
         apuesta.setEstado("GANADA");
         apuestaRepository.save(apuesta);
 
-        // Pagar ganancia al usuario
         Double ganancia = apuesta.getGananciaPotencial();
         Usuario usuario = apuesta.getUsuario();
         usuario.setSaldo(usuario.getSaldo() + ganancia);
         usuarioRepository.save(usuario);
 
-        // Registrar transacción de ganancia
         transaccionService.registrarGanancia(usuario.getId(), ganancia,
                 "Ganancia apuesta #" + apuestaId);
     }
@@ -155,7 +145,6 @@ public class ApuestaServiceImpl implements ApuestaService {
 
         apuesta.setEstado("PERDIDA");
         apuestaRepository.save(apuesta);
-        // No se devuelve el dinero (ya fue descontado al hacer la apuesta)
     }
 
     @Override
@@ -167,7 +156,6 @@ public class ApuestaServiceImpl implements ApuestaService {
             throw new IllegalArgumentException("Solo se pueden cancelar apuestas pendientes");
         }
 
-        // Devolver dinero al usuario
         Usuario usuario = apuesta.getUsuario();
         usuario.setSaldo(usuario.getSaldo() + apuesta.getMonto());
         usuarioRepository.save(usuario);
@@ -175,7 +163,6 @@ public class ApuestaServiceImpl implements ApuestaService {
         apuesta.setEstado("CANCELADA");
         apuestaRepository.save(apuesta);
 
-        // Registrar transacción de devolución
         transaccionService.registrarDeposito(usuario.getId(), apuesta.getMonto(),
                 "Devolución apuesta cancelada #" + apuestaId);
     }
